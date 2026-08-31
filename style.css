@@ -1,0 +1,537 @@
+/* =========================
+   BASIC SETTINGS
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Montserrat", Arial, sans-serif;
+    background: #FAF7F0;
+    color: #302522;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    height: 80px;
+    padding: 0 6%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FFFDFC;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid #eee5dc;
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    font-family: Georgia, serif;
+    letter-spacing: 2px;
+}
+
+.logo span {
+    font-size: 22px;
+}
+
+.logo small {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-align: center;
+    margin-top: 5px;
+}
+
+nav {
+    display: flex;
+    gap: 25px;
+}
+
+nav a {
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #6B2635;
+}
+
+.whatsapp-btn,
+.primary-btn,
+.order-btn {
+    background: #6B2635;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 30px;
+    transition: 0.3s;
+}
+
+.whatsapp-btn:hover,
+.primary-btn:hover,
+.order-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    min-height: 680px;
+    padding: 70px 7%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.small-heading,
+.section-title p {
+    color: #B89B5E;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+}
+
+.hero h1 {
+    font-family: Georgia, serif;
+    font-size: clamp(45px, 6vw, 75px);
+    line-height: 1.1;
+    font-weight: normal;
+    margin-bottom: 25px;
+}
+
+.hero-content > p:not(.small-heading) {
+    color: #756B67;
+    max-width: 500px;
+    margin-bottom: 30px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.primary-btn {
+    display: inline-block;
+}
+
+.secondary-btn {
+    border: 1px solid #6B2635;
+    color: #6B2635;
+    padding: 12px 20px;
+    border-radius: 30px;
+}
+
+.trust-text {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #756B67;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 600px;
+    object-fit: cover;
+    border-radius: 180px 180px 10px 10px;
+}
+
+
+/* =========================
+   SECTION TITLE
+========================= */
+
+.section-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-title h2 {
+    font-family: Georgia, serif;
+    font-size: 45px;
+    font-weight: normal;
+}
+
+.section-title span {
+    display: block;
+    margin-top: 10px;
+    color: #756B67;
+}
+
+
+/* =========================
+   WHY US
+========================= */
+
+.why-us {
+    padding: 100px 7%;
+    background: #FFFDFC;
+}
+
+.benefits {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    text-align: center;
+}
+
+.icon {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 15px;
+    border: 1px solid #B89B5E;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B2635;
+    font-size: 20px;
+}
+
+.benefit h3 {
+    margin-bottom: 8px;
+}
+
+.benefit p {
+    color: #756B67;
+    font-size: 14px;
+}
+
+
+/* =========================
+   COLLECTION
+========================= */
+
+.collection {
+    padding: 100px 7%;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.product-card {
+    background: #FFFDFC;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card img {
+    width: 100%;
+    height: 430px;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 22px;
+}
+
+.product-info h3 {
+    font-family: Georgia, serif;
+    font-size: 25px;
+    font-weight: normal;
+}
+
+.description {
+    color: #756B67;
+    font-size: 13px;
+    margin: 7px 0;
+}
+
+.price {
+    font-weight: bold;
+    font-size: 20px;
+    margin: 10px 0 15px;
+}
+
+.order-btn {
+    display: inline-block;
+    font-size: 13px;
+}
+
+
+/* =========================
+   HOW TO ORDER
+========================= */
+
+.how-to-order {
+    padding: 100px 7%;
+    background: #FFFDFC;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.step {
+    text-align: center;
+}
+
+.step span {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 35px;
+    color: #B89B5E;
+    margin-bottom: 10px;
+}
+
+.step h3 {
+    margin-bottom: 10px;
+}
+
+.step p {
+    color: #756B67;
+    font-size: 14px;
+}
+
+
+/* =========================
+   COD BANNER
+========================= */
+
+.cod-banner {
+    padding: 80px 20px;
+    text-align: center;
+    background: #6B2635;
+    color: white;
+}
+
+.cod-banner p {
+    color: #e5c98c;
+    letter-spacing: 3px;
+    font-size: 13px;
+}
+
+.cod-banner h2 {
+    font-family: Georgia, serif;
+    font-size: 45px;
+    font-weight: normal;
+    margin: 10px 0 25px;
+}
+
+.light-btn {
+    display: inline-block;
+    background: #FFFDFC;
+    color: #6B2635;
+    padding: 13px 25px;
+    border-radius: 30px;
+}
+
+
+/* =========================
+   ABOUT
+========================= */
+
+.about {
+    padding: 110px 20%;
+    text-align: center;
+}
+
+.about h2 {
+    font-family: Georgia, serif;
+    font-size: 45px;
+    font-weight: normal;
+    margin-bottom: 25px;
+}
+
+.about p:not(.small-heading) {
+    color: #756B67;
+    margin: 10px auto;
+    max-width: 750px;
+}
+
+
+/* =========================
+   FAQ
+========================= */
+
+.faq {
+    padding: 100px 15%;
+    background: #FFFDFC;
+}
+
+.faq-list {
+    max-width: 800px;
+    margin: auto;
+}
+
+details {
+    border-bottom: 1px solid #ddd2c9;
+    padding: 20px 0;
+}
+
+summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+details p {
+    color: #756B67;
+    padding-top: 10px;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    background: #302522;
+    color: #FFFDFC;
+    text-align: center;
+    padding: 70px 20px;
+}
+
+.footer-logo {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+}
+
+footer > p {
+    color: #d7cbc5;
+    margin: 10px 0 25px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.copyright {
+    font-size: 12px;
+    margin-top: 30px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+
+    nav {
+        display: none;
+    }
+
+    .header {
+        padding: 0 5%;
+    }
+
+    .header .whatsapp-btn {
+        font-size: 11px;
+        padding: 9px 12px;
+    }
+
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 50px 6%;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+    }
+
+    .hero-image {
+        order: -1;
+    }
+
+    .hero-image img {
+        height: 500px;
+    }
+
+    .benefits {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .product-card img {
+        height: 330px;
+    }
+
+    .steps {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .about {
+        padding: 80px 8%;
+    }
+
+    .faq {
+        padding: 80px 8%;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .hero h1 {
+        font-size: 40px;
+    }
+
+    .section-title h2 {
+        font-size: 35px;
+    }
+
+    .benefits,
+    .product-grid,
+    .steps {
+        grid-template-columns: 1fr;
+    }
+
+    .product-card img {
+        height: 450px;
+    }
+
+    .cod-banner h2 {
+        font-size: 35px;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+}
