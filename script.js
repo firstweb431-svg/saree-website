@@ -194,16 +194,103 @@ document.addEventListener("click", function(event) {
 });
 
 
-/* ORDER FORM SUBMISSION */
+/* ================= RAZORPAY PAYMENT ================= */
 
-document.getElementById("orderForm").addEventListener("submit", function(event) {
+document.getElementById("orderForm").addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
-    alert(
-        "Order details received for " +
-        selectedProductName +
-        "."
-    );
+    try {
+
+        /* Create Razorpay order through Cloudflare Worker */
+
+        const response = await fetch(
+            "https://aarohi-payment.firstweb431.workers.dev/create-order",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    productName: selectedProductName
+                })
+            }
+        );
+
+        const order = await response.json();
+
+        if (!response.ok || !order.success) {
+
+            throw new Error(
+                order.error
+                    ? JSON.stringify(order.error)
+                    : "Unable to create payment order."
+            );
+
+        }
+
+
+        /* Razorpay Checkout */
+
+        const options = {
+
+            key: order.keyId,
+
+            amount: order.amount,
+
+            currency: order.currency,
+
+            name: "Aarohi Sarees",
+
+            description: order.productName,
+
+            order_id: order.orderId,
+
+            handler: function(paymentResponse) {
+
+                alert(
+                    "Payment completed successfully!\n\n" +
+                    "Payment ID: " +
+                    paymentResponse.razorpay_payment_id
+                );
+
+                closeOrderForm();
+
+            },
+
+            prefill: {
+
+                name: document.getElementById("customerName")?.value || "",
+
+                contact: document.getElementById("customerPhone")?.value || ""
+
+            },
+
+            theme: {
+
+                color: "#8b5e3c"
+
+            }
+
+        };
+
+
+        const razorpay = new Razorpay(options);
+
+        razorpay.open();
+
+
+    } catch (error) {
+
+        console.error("Payment error:", error);
+
+        alert(
+            "Unable to start payment.\n\n" +
+            "Please try again."
+        );
+
+    }
 
 });
