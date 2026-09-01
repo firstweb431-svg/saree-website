@@ -145,3 +145,65 @@ function closeLightbox() {
     lightbox.style.display =
         "none";
 }
+
+
+/* ================= ORDER FORM ================= */
+
+let selectedProductName = "";
+let selectedProductPrice = 0;
+
+
+/* OPEN ORDER FORM */
+
+function openOrderForm(productName, productPrice) {
+
+    selectedProductName = productName;
+    selectedProductPrice = productPrice;
+
+    document.getElementById("selectedProduct").textContent = productName;
+
+    document.getElementById("selectedPrice").textContent =
+        "₹" + productPrice.toLocaleString("en-IN");
+
+    document.getElementById("orderModal").classList.add("active");
+
+}
+
+
+/* CLOSE ORDER FORM */
+
+function closeOrderForm() {
+
+    document.getElementById("orderModal").classList.remove("active");
+
+}
+
+
+/* CLOSE WHEN CLICKING OUTSIDE THE FORM */
+
+document.addEventListener("click", function(event) {
+
+    const modal = document.getElementById("orderModal");
+
+    if (event.target === modal) {
+
+        closeOrderForm();
+
+    }
+
+});
+
+
+/* ORDER FORM SUBMISSION */
+
+document.getElementById("orderForm").addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    alert(
+        "Order details received for " +
+        selectedProductName +
+        "."
+    );
+
+});
