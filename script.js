@@ -248,16 +248,89 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
 
             order_id: order.orderId,
 
-            handler: function(paymentResponse) {
+            handler: async function(paymentResponse) {
 
-                alert(
-                    "Payment completed successfully!\n\n" +
-                    "Payment ID: " +
-                    paymentResponse.razorpay_payment_id
-                );
-
-                closeOrderForm();
-
+                try {
+            
+                    /* Verify payment through Cloudflare Worker */
+            
+                    const verifyResponse = await fetch(
+                        "https://aarohi-payment.firstweb431.workers.dev/verify-payment",
+                        {
+                            method: "POST",
+            
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+            
+                            body: JSON.stringify({
+            
+                                razorpay_order_id:
+                                    paymentResponse.razorpay_order_id,
+            
+                                razorpay_payment_id:
+                                    paymentResponse.razorpay_payment_id,
+            
+                                razorpay_signature:
+                                    paymentResponse.razorpay_signature
+            
+                            })
+                        }
+                    );
+            
+            
+                    const verification =
+                        await verifyResponse.json();
+            
+            
+                    /* Check verification result */
+            
+                    if (
+                        !verifyResponse.ok ||
+                        !verification.success
+                    ) {
+            
+                        throw new Error(
+                            verification.error ||
+                            "Payment verification failed."
+                        );
+            
+                    }
+            
+            
+                    /* Payment successfully verified */
+            
+                    alert(
+                        "Payment successful and verified! 🎉\n\n" +
+                        "Product: " +
+                        selectedProductName +
+                        "\n" +
+                        "Amount: ₹" +
+                        selectedProductPrice.toLocaleString("en-IN") +
+                        "\n\n" +
+                        "Payment ID: " +
+                        paymentResponse.razorpay_payment_id
+                    );
+            
+            
+                    closeOrderForm();
+            
+            
+                } catch (error) {
+            
+                    console.error(
+                        "Payment verification error:",
+                        error
+                    );
+            
+            
+                    alert(
+                        "Payment was received, but verification could not be completed.\n\n" +
+                        "Please contact Aarohi Sarees before placing another order."
+                    );
+            
+                }
+            
             },
 
             prefill: {
