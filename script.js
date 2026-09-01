@@ -252,7 +252,28 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
 
                 try {
             
-                    /* Verify payment through Cloudflare Worker */
+                    /* ================= CUSTOMER DETAILS ================= */
+            
+                    const customerName =
+                        document.getElementById("customerName")?.value.trim() || "";
+            
+                    const customerPhone =
+                        document.getElementById("customerPhone")?.value.trim() || "";
+            
+                    const customerAddress =
+                        document.getElementById("customerAddress")?.value.trim() || "";
+            
+                    const customerCity =
+                        document.getElementById("customerCity")?.value.trim() || "";
+            
+                    const customerState =
+                        document.getElementById("customerState")?.value.trim() || "";
+            
+                    const customerPincode =
+                        document.getElementById("customerPincode")?.value.trim() || "";
+            
+            
+                    /* ================= VERIFY PAYMENT ================= */
             
                     const verifyResponse = await fetch(
                         "https://aarohi-payment.firstweb431.workers.dev/verify-payment",
@@ -272,7 +293,28 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
                                     paymentResponse.razorpay_payment_id,
             
                                 razorpay_signature:
-                                    paymentResponse.razorpay_signature
+                                    paymentResponse.razorpay_signature,
+            
+                                productName:
+                                    selectedProductName,
+            
+                                customerName:
+                                    customerName,
+            
+                                customerPhone:
+                                    customerPhone,
+            
+                                customerAddress:
+                                    customerAddress,
+            
+                                customerCity:
+                                    customerCity,
+            
+                                customerState:
+                                    customerState,
+            
+                                customerPincode:
+                                    customerPincode
             
                             })
                         }
@@ -283,7 +325,7 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
                         await verifyResponse.json();
             
             
-                    /* Check verification result */
+                    /* ================= CHECK VERIFICATION ================= */
             
                     if (
                         !verifyResponse.ok ||
@@ -298,18 +340,21 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
                     }
             
             
-                    /* Payment successfully verified */
+                    /* ================= SUCCESS ================= */
             
                     alert(
-                        "Payment successful and verified! 🎉\n\n" +
+                        "Order placed successfully! 🎉\n\n" +
+            
                         "Product: " +
                         selectedProductName +
-                        "\n" +
-                        "Amount: ₹" +
+            
+                        "\nAmount: ₹" +
                         selectedProductPrice.toLocaleString("en-IN") +
-                        "\n\n" +
-                        "Payment ID: " +
-                        paymentResponse.razorpay_payment_id
+            
+                        "\n\nPayment ID: " +
+                        paymentResponse.razorpay_payment_id +
+            
+                        "\n\nYour order details have been received."
                     );
             
             
@@ -325,7 +370,7 @@ document.getElementById("orderForm").addEventListener("submit", async function(e
             
             
                     alert(
-                        "Payment was received, but verification could not be completed.\n\n" +
+                        "Payment was received, but order verification could not be completed.\n\n" +
                         "Please contact Aarohi Sarees before placing another order."
                     );
             
