@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Aarohi Sarees - Admin Orders</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: #8b5e3c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .login-box,
+        .orders-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .login-box {
+            max-width: 450px;
+            margin: 50px auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #8b5e3c;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #ordersSection {
+            display: none;
+        }
+
+        .order {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .order h3 {
+            margin-top: 0;
+        }
+
+        .error {
+            color: #b00020;
+            margin-top: 15px;
+        }
+
+        .success {
+            color: green;
+            margin-top: 15px;
+        }
+
+        .logout {
+            float: right;
+            background: #555;
+        }
+
+        @media (max-width: 600px) {
+
+            .logout {
+                float: none;
+                margin-top: 10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="header">
+
+        <h1>Aarohi Sarees</h1>
+
+        <p>Admin Order Dashboard</p>
+
+    </div>
+
+
+    <!-- LOGIN -->
+
+    <div id="loginSection" class="container">
+
+        <div class="login-box">
+
+            <h2>Admin Access</h2>
+
+            <p>
+                Enter your private admin token to view orders.
+            </p>
+
+            <input
+                type="password"
+                id="adminToken"
+                placeholder="Enter admin token"
+            >
+
+            <button onclick="loadOrders()">
+                View Orders
+            </button>
+
+            <div id="loginMessage"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ORDERS -->
+
+    <div id="ordersSection" class="container">
+
+        <div class="orders-box">
+
+            <button
+                class="logout"
+                onclick="logout()">
+                Logout
+            </button>
+
+            <h2>Customer Orders</h2>
+
+            <div id="ordersList">
+                Loading orders...
+            </div>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+const WORKER_URL =
+    "https://aarohi-payment.firstweb431.workers.dev";
+
+
+async function loadOrders() {
+
+    const token =
+        document.getElementById("adminToken").value.trim();
+
+    const message =
+        document.getElementById("loginMessage");
+
+
+    if (!token) {
+
+        message.className = "error";
+
+        message.textContent =
+            "Please enter your admin token.";
+
+        return;
+
+    }
+
+
+    message.textContent =
+        "Loading orders...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                WORKER_URL + "/admin/orders",
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            "Bearer " + token
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load orders."
+            );
+
+        }
+
+
+        document.getElementById(
+            "loginSection"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "ordersSection"
+        ).style.display = "block";
+
+
+        displayOrders(data.orders);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.className = "error";
+
+        message.textContent =
+            "Access denied or unable to load orders.";
+
+    }
+
+}
+
+
+function displayOrders(orders) {
+
+    const container =
+        document.getElementById("ordersList");
+
+
+    if (!orders || orders.length === 0) {
+
+        container.innerHTML =
+            "<p>No orders found.</p>";
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    orders.forEach(function(order) {
+
+        const orderElement =
+            document.createElement("div");
+
+        orderElement.className =
+            "order";
+
+
+        orderElement.innerHTML = `
+
+            <h3>
+                Order #${order.id}
+            </h3>
+
+            <p>
+                <strong>Product:</strong>
+                ${escapeHtml(order.product_name)}
+            </p>
+
+            <p>
+                <strong>Amount:</strong>
+                ₹${Number(order.amount).toLocaleString("en-IN")}
+            </p>
+
+            <p>
+                <strong>Customer:</strong>
+                ${escapeHtml(order.customer_name)}
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                ${escapeHtml(order.customer_phone)}
+            </p>
+
+            <p>
+                <strong>Address:</strong>
+                ${escapeHtml(order.customer_address)}
+            </p>
+
+            <p>
+                <strong>Razorpay Order ID:</strong>
+                ${escapeHtml(order.razorpay_order_id)}
+            </p>
+
+            <p>
+                <strong>Payment ID:</strong>
+                ${escapeHtml(order.razorpay_payment_id)}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                ${escapeHtml(order.order_status)}
+            </p>
+
+            <p>
+                <strong>Date:</strong>
+                ${escapeHtml(order.created_at)}
+            </p>
+
+        `;
+
+
+        container.appendChild(orderElement);
+
+    });
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+function logout() {
+
+    document.getElementById(
+        "adminToken"
+    ).value = "";
+
+
+    document.getElementById(
+        "ordersSection"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "loginSection"
+    ).style.display = "block";
+
+}
+
+</script>
+
+</body>
+
+</html>
