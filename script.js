@@ -1,3 +1,203 @@
+/* =========================================
+   SUPABASE CONNECTION
+========================================= */
+
+const SUPABASE_URL =
+    "https://cuyjptmspprlsoiafcrg.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_kt4EMLFL2l3Zi0g9vcPzzg_4gTUhx08";
+
+const SUPABASE_HEADERS = {
+    "apikey": SUPABASE_PUBLISHABLE_KEY,
+    "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+};
+
+
+/* =========================================
+   LOAD PRODUCTS FROM SUPABASE
+========================================= */
+
+async function loadProducts() {
+
+    const productGrid = document.getElementById("productGrid");
+
+    if (!productGrid) return;
+
+    try {
+
+        const [productsResponse, imagesResponse] = await Promise.all([
+
+            fetch(
+                `${SUPABASE_URL}/rest/v1/products?select=id,product_code,name,slug,description,selling_price,display_order,is_featured,is_active&is_active=eq.true&order=display_order.asc`,
+                {
+                    headers: SUPABASE_HEADERS
+                }
+            ),
+
+            fetch(
+                `${SUPABASE_URL}/rest/v1/product_images?select=id,product_id,image_url,alt_text,display_order,is_primary&order=display_order.asc`,
+                {
+                    headers: SUPABASE_HEADERS
+                }
+            )
+
+        ]);
+
+        if (!productsResponse.ok) {
+            throw new Error(`Products request failed: ${productsResponse.status}`);
+        }
+
+        if (!imagesResponse.ok) {
+            throw new Error(`Images request failed: ${imagesResponse.status}`);
+        }
+
+        const products = await productsResponse.json();
+        const images = await imagesResponse.json();
+
+        const imagesByProduct = {};
+
+        images.forEach(function(image) {
+
+            if (!imagesByProduct[image.product_id]) {
+                imagesByProduct[image.product_id] = [];
+            }
+
+            imagesByProduct[image.product_id].push(image);
+
+        });
+
+        productGrid.innerHTML = "";
+
+        if (!products.length) {
+
+            productGrid.innerHTML =
+                '<p>Our collection is being updated. Please check back soon.</p>';
+
+            return;
+
+        }
+
+        products.forEach(function(product) {
+
+            const productImages =
+                (imagesByProduct[product.id] || [])
+                .sort(function(a, b) {
+                    return a.display_order - b.display_order;
+                });
+
+            if (!productImages.length) return;
+
+            const card = document.createElement("div");
+            card.className = "product-card";
+
+            const gallery = document.createElement("div");
+            gallery.className = "product-gallery";
+
+            const mainContainer = document.createElement("div");
+            mainContainer.className = "main-image-container";
+
+            const prevButton = document.createElement("button");
+            prevButton.type = "button";
+            prevButton.className = "gallery-arrow prev";
+            prevButton.innerHTML = "&#10094;";
+            prevButton.onclick = function() {
+                previousImage(this);
+            };
+
+            const mainImage = document.createElement("img");
+            mainImage.src = productImages[0].image_url;
+            mainImage.className = "main-product-image";
+            mainImage.alt = productImages[0].alt_text || product.name;
+            mainImage.loading = "lazy";
+            mainImage.onclick = function() {
+                openLightbox(this);
+            };
+
+            const nextButton = document.createElement("button");
+            nextButton.type = "button";
+            nextButton.className = "gallery-arrow next";
+            nextButton.innerHTML = "&#10095;";
+            nextButton.onclick = function() {
+                nextImage(this);
+            };
+
+            mainContainer.appendChild(prevButton);
+            mainContainer.appendChild(mainImage);
+            mainContainer.appendChild(nextButton);
+
+            const thumbnails = document.createElement("div");
+            thumbnails.className = "thumbnail-container";
+
+            productImages.forEach(function(image, index) {
+
+                const thumbnail = document.createElement("img");
+                thumbnail.src = image.image_url;
+                thumbnail.className =
+                    "thumbnail" + (index === 0 ? " active" : "");
+                thumbnail.alt = image.alt_text || `${product.name} image ${index + 1}`;
+                thumbnail.loading = "lazy";
+                thumbnail.onclick = function() {
+                    selectImage(this);
+                };
+
+                thumbnails.appendChild(thumbnail);
+
+            });
+
+            gallery.appendChild(mainContainer);
+            gallery.appendChild(thumbnails);
+
+            const info = document.createElement("div");
+            info.className = "product-info";
+
+            const name = document.createElement("h3");
+            name.textContent = product.name;
+
+            const description = document.createElement("p");
+            description.className = "description";
+            description.textContent = product.description || "Elegant saree design.";
+
+            const price = document.createElement("div");
+            price.className = "price";
+            price.textContent =
+                "₹" + Number(product.selling_price).toLocaleString("en-IN");
+
+            const buyButton = document.createElement("button");
+            buyButton.type = "button";
+            buyButton.className = "order-btn";
+            buyButton.textContent = "Buy Now";
+            buyButton.onclick = function() {
+                openOrderForm(product.name, Number(product.selling_price));
+            };
+
+            info.appendChild(name);
+            info.appendChild(description);
+            info.appendChild(price);
+            info.appendChild(buyButton);
+
+            card.appendChild(gallery);
+            card.appendChild(info);
+
+            productGrid.appendChild(card);
+
+        });
+
+    } catch (error) {
+
+        console.error("Unable to load products:", error);
+
+        productGrid.innerHTML =
+            '<p>We could not load the collection right now. Please refresh the page or contact us on WhatsApp.</p>';
+
+    }
+}
+
+
+/* Start loading the catalogue after the page is ready. */
+loadProducts();
+
+
 console.log("Aarohi Sarees website loaded successfully!");
 /* =========================================
    SAREE GALLERY
