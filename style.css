@@ -1383,6 +1383,21 @@ footer > p {
     opacity: 0.9;
 }
 
+.admin-login {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.admin-login a {
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+}
+
+.admin-login a:hover {
+    text-decoration: underline;
+}
+
 
 /* ================= MOBILE ORDER FORM ================= */
 
