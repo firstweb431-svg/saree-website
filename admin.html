@@ -1,391 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Aarohi Sarees - Admin Orders</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        .header {
-            background: #8b5e3c;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-
-        .login-box,
-        .orders-box {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .login-box {
-            max-width: 450px;
-            margin: 50px auto;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            background: #8b5e3c;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        #ordersSection {
-            display: none;
-        }
-
-        .order {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 15px;
-        }
-
-        .order h3 {
-            margin-top: 0;
-        }
-
-        .error {
-            color: #b00020;
-            margin-top: 15px;
-        }
-
-        .success {
-            color: green;
-            margin-top: 15px;
-        }
-
-        .logout {
-            float: right;
-            background: #555;
-        }
-
-        @media (max-width: 600px) {
-
-            .logout {
-                float: none;
-                margin-top: 10px;
-            }
-
-        }
-
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aarohi Sarees | Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: #faf7f4;
+      color: #2f2420;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 18px 50px; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; margin-bottom: 24px;
+    }
+    .brand h1 { margin: 0; font-size: 28px; }
+    .brand p { margin: 5px 0 0; color: #7d6c65; font-family: Arial, sans-serif; font-size: 13px; }
+    button {
+      border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer;
+      font-family: Arial, sans-serif; font-weight: 600;
+    }
+    .btn-dark { background: #3c2c27; color: #fff; }
+    .btn-light { background: #eee7e2; color: #3c2c27; }
+    .card {
+      background: #fff; border: 1px solid #eadfd9; border-radius: 14px;
+      box-shadow: 0 6px 22px rgba(60,44,39,.06);
+    }
+    #loginSection { max-width: 440px; margin: 70px auto; padding: 30px; }
+    label { display: block; font: 600 13px Arial, sans-serif; margin: 14px 0 7px; }
+    input {
+      width: 100%; padding: 12px 13px; border: 1px solid #d8ccc6; border-radius: 8px;
+      font-size: 15px; outline: none;
+    }
+    input:focus { border-color: #9d7d70; }
+    .message { margin-top: 14px; font: 13px Arial, sans-serif; min-height: 18px; }
+    .error { color: #a33b32; }
+    .success { color: #39734a; }
+    #dashboard { display: none; }
+    .stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px;
+    }
+    .stat { padding: 18px; }
+    .stat span { display: block; font: 12px Arial, sans-serif; color: #81716a; }
+    .stat strong { display: block; margin-top: 6px; font-size: 25px; }
+    .section { padding: 20px; }
+    .section-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      margin-bottom: 15px;
+    }
+    .section-head h2 { margin: 0; font-size: 21px; }
+    .hint { color: #81716a; font: 12px Arial, sans-serif; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 780px; }
+    th, td {
+      text-align: left; padding: 12px 10px; border-bottom: 1px solid #eee5e0;
+      font-family: Arial, sans-serif; font-size: 13px; vertical-align: middle;
+    }
+    th { color: #76655e; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    .product-img {
+      width: 58px; height: 72px; object-fit: cover; border-radius: 7px; background: #eee7e2;
+      display: block;
+    }
+    .product-name { font-weight: 700; color: #3c2c27; }
+    .code { color: #8a7770; margin-top: 3px; font-size: 11px; }
+    .pill {
+      display: inline-block; padding: 5px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+    }
+    .active { background: #e8f4eb; color: #39734a; }
+    .inactive { background: #f5e7e5; color: #a33b32; }
+    .featured { background: #f3eadb; color: #8b6431; }
+    .not-featured { background: #eee9e6; color: #756963; }
+    .empty { padding: 30px 10px; text-align: center; color: #7d6c65; font-family: Arial, sans-serif; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .form-group.full { grid-column:1/-1; }
+    .form-group label { margin-top:0; }
+    textarea { width:100%; min-height:100px; padding:12px 13px; border:1px solid #d8ccc6; border-radius:8px; font:15px Arial,sans-serif; resize:vertical; }
+    .check-row { display:flex; gap:22px; align-items:center; margin-top:18px; font:13px Arial,sans-serif; }
+    .check-row label { display:flex; align-items:center; gap:7px; margin:0; font-weight:600; }
+    .check-row input { width:auto; }
+    .form-actions { margin-top:18px; display:flex; gap:10px; }
+    @media (max-width:700px) { .form-grid { grid-template-columns:1fr; } .form-group.full { grid-column:auto; } }
+    @media (max-width: 700px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .stats { grid-template-columns: 1fr; }
+      #loginSection { margin: 30px auto; }
+    }
+  </style>
 </head>
-
-
 <body>
-
-    <div class="header">
-
+  <div class="wrap">
+    <section id="loginSection" class="card">
+      <div class="brand">
         <h1>Aarohi Sarees</h1>
+        <p>Secure admin panel</p>
+      </div>
+      <form id="loginForm">
+        <label for="email">Admin email</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button class="btn-dark" type="submit" style="width:100%; margin-top:18px;">Sign in</button>
+      </form>
+      <div id="loginMessage" class="message"></div>
+    </section>
 
-        <p>Admin Order Dashboard</p>
-
-    </div>
-
-
-    <!-- LOGIN -->
-
-    <div id="loginSection" class="container">
-
-        <div class="login-box">
-
-            <h2>Admin Access</h2>
-
-            <p>
-                Enter your private admin token to view orders.
-            </p>
-
-            <input
-                type="password"
-                id="adminToken"
-                placeholder="Enter admin token"
-            >
-
-            <button onclick="loadOrders()">
-                View Orders
-            </button>
-
-            <div id="loginMessage"></div>
-
+    <section id="dashboard">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Aarohi Sarees — Admin</h1>
+          <p>Manage your catalogue from Supabase</p>
         </div>
+        <button id="logoutBtn" class="btn-light">Log out</button>
+      </div>
 
-    </div>
+      <div class="stats">
+        <div class="card stat"><span>Total products</span><strong id="totalProducts">—</strong></div>
+        <div class="card stat"><span>Active products</span><strong id="activeProducts">—</strong></div>
+        <div class="card stat"><span>Featured products</span><strong id="featuredProducts">—</strong></div>
+      </div>
 
-
-    <!-- ORDERS -->
-
-    <div id="ordersSection" class="container">
-
-        <div class="orders-box">
-
-            <button
-                class="logout"
-                onclick="logout()">
-                Logout
-            </button>
-
-            <h2>Customer Orders</h2>
-
-            <div id="ordersList">
-                Loading orders...
-            </div>
-
+      <section class="card section">
+        <div class="section-head">
+          <div>
+            <h2>Product List</h2>
+            <div class="hint">Products currently stored in your catalogue</div>
+          </div>
+          <button id="refreshBtn" class="btn-light">Refresh</button>
         </div>
+        <div id="productMessage" class="message"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Featured</th>
+                <th>Order</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody"></tbody>
+          </table>
+        </div>
+      </section>
 
-    </div>
+      <section class="card section" style="margin-top:22px;">
+        <div class="section-head">
+          <div><h2>Add Product</h2><div class="hint">Create a new product in your catalogue</div></div>
+        </div>
+        <form id="addProductForm">
+          <div class="form-grid">
+            <div class="form-group"><label for="productCode">Product Code</label><input id="productCode" required placeholder="e.g. S013"></div>
+            <div class="form-group"><label for="productName">Product Name</label><input id="productName" required placeholder="e.g. Ananya"></div>
+            <div class="form-group"><label for="sellingPrice">Selling Price (₹)</label><input id="sellingPrice" type="number" min="0" step="1" required placeholder="999"></div>
+            <div class="form-group"><label for="displayOrder">Display Order</label><input id="displayOrder" type="number" min="1" step="1" required placeholder="13"></div>
+            <div class="form-group full"><label for="description">Description</label><textarea id="description" placeholder="Short product description"></textarea></div>
+          </div>
+          <div class="check-row">
+            <label><input id="isActive" type="checkbox" checked> Active</label>
+            <label><input id="isFeatured" type="checkbox"> Featured</label>
+          </div>
+          <div class="form-actions"><button class="btn-dark" type="submit">Add Product</button><button class="btn-light" type="reset">Clear</button></div>
+          <div id="addProductMessage" class="message"></div>
+        </form>
+      </section>
+    </section>
+  </div>
 
+  <script>
+    const SUPABASE_URL = "https://cuyjptmspprlsoiafcrg.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_kt4EMLFL2l3Zi0g9vcPzzg_4gTUhx08";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
+    const loginSection = document.getElementById("loginSection");
+    const dashboard = document.getElementById("dashboard");
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
+    const productMessage = document.getElementById("productMessage");
+    const tbody = document.getElementById("productTableBody");
+    const addProductForm = document.getElementById("addProductForm");
+    const addProductMessage = document.getElementById("addProductMessage");
 
-const WORKER_URL =
-    "https://aarohi-payment.firstweb431.workers.dev";
-
-
-async function loadOrders() {
-
-    const token =
-        document.getElementById("adminToken").value.trim();
-
-    const message =
-        document.getElementById("loginMessage");
-
-
-    if (!token) {
-
-        message.className = "error";
-
-        message.textContent =
-            "Please enter your admin token.";
-
-        return;
-
+    function setMessage(el, text, type = "") {
+      el.textContent = text;
+      el.className = "message " + type;
     }
 
+    async function verifyAdmin() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) return false;
 
-    message.textContent =
-        "Loading orders...";
+      const { data, error } = await supabaseClient.rpc("is_admin");
+      if (error || data !== true) {
+        await supabaseClient.auth.signOut();
+        return false;
+      }
+      return true;
+    }
 
+    async function showDashboard() {
+      loginSection.style.display = "none";
+      dashboard.style.display = "block";
+      await loadProducts();
+    }
 
-    try {
+    async function loadProducts() {
+      setMessage(productMessage, "Loading products...");
+      tbody.replaceChildren();
 
-        const response =
-            await fetch(
-                WORKER_URL + "/admin/orders",
-                {
-                    method: "GET",
+      const { data: products, error: productError } = await supabaseClient
+        .from("products")
+        .select("id, product_code, name, selling_price, is_active, is_featured, display_order")
+        .order("display_order", { ascending: true });
 
-                    headers: {
-                        "Authorization":
-                            "Bearer " + token
-                    }
-                }
-            );
+      if (productError) {
+        setMessage(productMessage, "Could not load products: " + productError.message, "error");
+        return;
+      }
 
+      const { data: images, error: imageError } = await supabaseClient
+        .from("product_images")
+        .select("product_id, image_url, is_primary, display_order")
+        .order("display_order", { ascending: true });
 
-        const data =
-            await response.json();
+      if (imageError) {
+        setMessage(productMessage, "Products loaded, but images could not be loaded.", "error");
+      }
 
-
-        if (
-            !response.ok ||
-            !data.success
-        ) {
-
-            throw new Error(
-                data.error ||
-                "Unable to load orders."
-            );
-
+      const imageMap = new Map();
+      (images || []).forEach(img => {
+        const current = imageMap.get(img.product_id);
+        if (!current || img.is_primary || img.display_order < current.display_order) {
+          imageMap.set(img.product_id, img);
         }
+      });
 
+      document.getElementById("totalProducts").textContent = products.length;
+      document.getElementById("activeProducts").textContent =
+        products.filter(p => p.is_active).length;
+      document.getElementById("featuredProducts").textContent =
+        products.filter(p => p.is_featured).length;
 
-        document.getElementById(
-            "loginSection"
-        ).style.display = "none";
+      products.forEach(product => {
+        const tr = document.createElement("tr");
 
+        const imgCell = document.createElement("td");
+        const img = document.createElement("img");
+        img.className = "product-img";
+        img.alt = product.name || "Product image";
+        const primary = imageMap.get(product.id);
+        if (primary) {
+          img.src = primary.image_url;
+        } else {
+          img.alt = "No image";
+        }
+        imgCell.appendChild(img);
 
-        document.getElementById(
-            "ordersSection"
-        ).style.display = "block";
+        const nameCell = document.createElement("td");
+        const name = document.createElement("div");
+        name.className = "product-name";
+        name.textContent = product.name || "Unnamed product";
+        const code = document.createElement("div");
+        code.className = "code";
+        code.textContent = product.product_code || "No code";
+        nameCell.append(name, code);
 
+        const priceCell = document.createElement("td");
+        priceCell.textContent = "₹" + Number(product.selling_price || 0).toLocaleString("en-IN");
 
-        displayOrders(data.orders);
+        const statusCell = document.createElement("td");
+        const status = document.createElement("span");
+        status.className = "pill " + (product.is_active ? "active" : "inactive");
+        status.textContent = product.is_active ? "Active" : "Inactive";
+        statusCell.appendChild(status);
 
+        const featuredCell = document.createElement("td");
+        const featured = document.createElement("span");
+        featured.className = "pill " + (product.is_featured ? "featured" : "not-featured");
+        featured.textContent = product.is_featured ? "Yes" : "No";
+        featuredCell.appendChild(featured);
 
-    } catch (error) {
+        const orderCell = document.createElement("td");
+        orderCell.textContent = product.display_order ?? "—";
 
-        console.error(error);
+        tr.append(imgCell, nameCell, priceCell, statusCell, featuredCell, orderCell);
+        tbody.appendChild(tr);
+      });
 
-        message.className = "error";
-
-        message.textContent =
-            "Access denied or unable to load orders.";
-
+      setMessage(
+        productMessage,
+        products.length ? "Products loaded successfully." : "No products found.",
+        products.length ? "success" : ""
+      );
     }
 
-}
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setMessage(loginMessage, "Signing in...");
 
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-function displayOrders(orders) {
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-    const container =
-        document.getElementById("ordersList");
-
-
-    if (!orders || orders.length === 0) {
-
-        container.innerHTML =
-            "<p>No orders found.</p>";
-
+      if (error) {
+        setMessage(loginMessage, error.message, "error");
         return;
+      }
 
-    }
+      const admin = await verifyAdmin();
+      if (!admin) {
+        setMessage(loginMessage, "This account is not authorized as an admin.", "error");
+        return;
+      }
 
-
-    container.innerHTML = "";
-
-
-    orders.forEach(function(order) {
-
-        const orderElement =
-            document.createElement("div");
-
-        orderElement.className =
-            "order";
-
-
-        orderElement.innerHTML = `
-
-            <h3>
-                Order #${order.id}
-            </h3>
-
-            <p>
-                <strong>Product:</strong>
-                ${escapeHtml(order.product_name)}
-            </p>
-
-            <p>
-                <strong>Amount:</strong>
-                ₹${Number(order.amount).toLocaleString("en-IN")}
-            </p>
-
-            <p>
-                <strong>Customer:</strong>
-                ${escapeHtml(order.customer_name)}
-            </p>
-
-            <p>
-                <strong>Phone:</strong>
-                ${escapeHtml(order.customer_phone)}
-            </p>
-
-            <p>
-                <strong>Address:</strong>
-                ${escapeHtml(order.customer_address)}
-            </p>
-
-            <p>
-                <strong>Razorpay Order ID:</strong>
-                ${escapeHtml(order.razorpay_order_id)}
-            </p>
-
-            <p>
-                <strong>Payment ID:</strong>
-                ${escapeHtml(order.razorpay_payment_id)}
-            </p>
-
-            <p>
-                <strong>Status:</strong>
-                ${escapeHtml(order.order_status)}
-            </p>
-
-            <p>
-                <strong>Date:</strong>
-                ${escapeHtml(order.created_at)}
-            </p>
-
-        `;
-
-
-        container.appendChild(orderElement);
-
+      setMessage(loginMessage, "Secure Supabase login successful.", "success");
+      await showDashboard();
     });
 
-}
+    addProductForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setMessage(addProductMessage, "Adding product...");
 
+      const productCode = document.getElementById("productCode").value.trim();
+      const productName = document.getElementById("productName").value.trim();
+      const sellingPrice = Number(document.getElementById("sellingPrice").value);
+      const displayOrder = Number(document.getElementById("displayOrder").value);
+      const description = document.getElementById("description").value.trim();
+      const isActive = document.getElementById("isActive").checked;
+      const isFeatured = document.getElementById("isFeatured").checked;
 
-function escapeHtml(value) {
+      if (!productCode || !productName || !Number.isFinite(sellingPrice) || sellingPrice < 0 || !Number.isInteger(displayOrder) || displayOrder < 1) {
+        setMessage(addProductMessage, "Please enter valid product details.", "error");
+        return;
+      }
 
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      const slug = productName.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || productCode.toLowerCase();
 
-}
+      const { error } = await supabaseClient.from("products").insert({
+        product_code: productCode,
+        name: productName,
+        slug,
+        description: description || null,
+        selling_price: sellingPrice,
+        is_active: isActive,
+        is_featured: isFeatured,
+        display_order: displayOrder
+      });
 
+      if (error) {
+        setMessage(addProductMessage, "Could not add product: " + error.message, "error");
+        return;
+      }
 
-function logout() {
+      setMessage(addProductMessage, "Product added successfully.", "success");
+      addProductForm.reset();
+      document.getElementById("isActive").checked = true;
+      await loadProducts();
+    });
 
-    document.getElementById(
-        "adminToken"
-    ).value = "";
+    document.getElementById("refreshBtn").addEventListener("click", loadProducts);
 
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      dashboard.style.display = "none";
+      loginSection.style.display = "block";
+      loginForm.reset();
+      setMessage(loginMessage, "You have been logged out.", "success");
+    });
 
-    document.getElementById(
-        "ordersSection"
-    ).style.display = "none";
-
-
-    document.getElementById(
-        "loginSection"
-    ).style.display = "block";
-
-}
-
-</script>
-
+    (async () => {
+      const admin = await verifyAdmin();
+      if (admin) {
+        await showDashboard();
+      }
+    })();
+  </script>
 </body>
-
 </html>
