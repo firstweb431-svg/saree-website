@@ -93,6 +93,18 @@
     .preview img { width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:7px; display:block; }
     .preview span { display:block; margin-top:6px; text-align:center; font:11px Arial,sans-serif; color:#76655e; }
     .upload-status { margin-top:12px; }
+
+    .edit-modal {
+      position:fixed; inset:0; background:rgba(47,36,32,.45); display:none;
+      align-items:center; justify-content:center; padding:18px; z-index:1000;
+    }
+    .edit-modal.open { display:flex; }
+    .edit-card { width:min(620px,100%); max-height:90vh; overflow:auto; padding:24px; }
+    .edit-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; }
+    .edit-head h2 { margin:0; font-size:21px; }
+    .close-btn { background:#eee7e2; color:#3c2c27; font-size:18px; padding:6px 10px; }
+    .edit-actions { margin-top:18px; display:flex; gap:10px; justify-content:flex-end; }
+    .btn-edit { background:#eee7e2; color:#3c2c27; padding:7px 11px; font-size:12px; }
     @media (max-width:700px) { .form-grid { grid-template-columns:1fr; } .form-group.full { grid-column:auto; } }
     @media (max-width:700px) { .upload-grid { grid-template-columns:1fr; } .upload-grid .full { grid-column:auto; } .preview-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width: 700px) {
@@ -153,6 +165,7 @@
                 <th>Status</th>
                 <th>Featured</th>
                 <th>Order</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="productTableBody"></tbody>
@@ -205,6 +218,49 @@
     </section>
   </div>
 
+    <div id="editModal" class="edit-modal" aria-hidden="true">
+      <div class="card edit-card">
+        <div class="edit-head">
+          <div><h2>Edit Product</h2><div class="hint">Update product details</div></div>
+          <button type="button" id="closeEditBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+        <form id="editProductForm">
+          <input id="editProductId" type="hidden">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="editProductCode">Product Code</label>
+              <input id="editProductCode" required>
+            </div>
+            <div class="form-group">
+              <label for="editProductName">Product Name</label>
+              <input id="editProductName" required>
+            </div>
+            <div class="form-group">
+              <label for="editSellingPrice">Selling Price (₹)</label>
+              <input id="editSellingPrice" type="number" min="0" step="1" required>
+            </div>
+            <div class="form-group">
+              <label for="editDisplayOrder">Display Order</label>
+              <input id="editDisplayOrder" type="number" min="1" step="1" required>
+            </div>
+            <div class="form-group full">
+              <label for="editDescription">Description</label>
+              <textarea id="editDescription" placeholder="Short product description"></textarea>
+            </div>
+          </div>
+          <div class="check-row">
+            <label><input id="editIsActive" type="checkbox"> Active</label>
+            <label><input id="editIsFeatured" type="checkbox"> Featured</label>
+          </div>
+          <div class="edit-actions">
+            <button type="button" id="cancelEditBtn" class="btn-light">Cancel</button>
+            <button type="submit" class="btn-dark">Save Changes</button>
+          </div>
+          <div id="editProductMessage" class="message"></div>
+        </form>
+      </div>
+    </div>
+
   <script>
     const SUPABASE_URL = "https://cuyjptmspprlsoiafcrg.supabase.co";
     const SUPABASE_KEY = "sb_publishable_kt4EMLFL2l3Zi0g9vcPzzg_4gTUhx08";
@@ -223,6 +279,9 @@
     const productImages = document.getElementById("productImages");
     const imagePreview = document.getElementById("imagePreview");
     const imageUploadMessage = document.getElementById("imageUploadMessage");
+    const editModal = document.getElementById("editModal");
+    const editProductForm = document.getElementById("editProductForm");
+    const editProductMessage = document.getElementById("editProductMessage");
 
     function setMessage(el, text, type = "") {
       el.textContent = text;
@@ -294,13 +353,35 @@
       });
     }
 
+
+    function openEditModal(product) {
+      document.getElementById("editProductId").value = product.id;
+      document.getElementById("editProductCode").value = product.product_code || "";
+      document.getElementById("editProductName").value = product.name || "";
+      document.getElementById("editSellingPrice").value = product.selling_price ?? "";
+      document.getElementById("editDisplayOrder").value = product.display_order ?? "";
+      document.getElementById("editDescription").value = product.description || "";
+      document.getElementById("editIsActive").checked = !!product.is_active;
+      document.getElementById("editIsFeatured").checked = !!product.is_featured;
+      setMessage(editProductMessage, "");
+      editModal.classList.add("open");
+      editModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeEditModal() {
+      editModal.classList.remove("open");
+      editModal.setAttribute("aria-hidden", "true");
+      editProductForm.reset();
+      setMessage(editProductMessage, "");
+    }
+
     async function loadProducts() {
       setMessage(productMessage, "Loading products...");
       tbody.replaceChildren();
 
       const { data: products, error: productError } = await supabaseClient
         .from("products")
-        .select("id, product_code, name, selling_price, is_active, is_featured, display_order")
+        .select("id, product_code, name, description, selling_price, is_active, is_featured, display_order")
         .order("display_order", { ascending: true });
 
       if (productError) {
@@ -373,7 +454,15 @@
         const orderCell = document.createElement("td");
         orderCell.textContent = product.display_order ?? "—";
 
-        tr.append(imgCell, nameCell, priceCell, statusCell, featuredCell, orderCell);
+        const actionCell = document.createElement("td");
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "btn-edit";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => openEditModal(product));
+        actionCell.appendChild(editBtn);
+
+        tr.append(imgCell, nameCell, priceCell, statusCell, featuredCell, orderCell, actionCell);
         tbody.appendChild(tr);
       });
 
@@ -528,6 +617,60 @@
       } catch (error) {
         setMessage(imageUploadMessage, "Image upload failed: " + error.message, "error");
       }
+    });
+
+
+    editProductForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setMessage(editProductMessage, "Saving changes...");
+
+      const id = document.getElementById("editProductId").value;
+      const productCode = document.getElementById("editProductCode").value.trim();
+      const productName = document.getElementById("editProductName").value.trim();
+      const sellingPrice = Number(document.getElementById("editSellingPrice").value);
+      const displayOrder = Number(document.getElementById("editDisplayOrder").value);
+      const description = document.getElementById("editDescription").value.trim();
+      const isActive = document.getElementById("editIsActive").checked;
+      const isFeatured = document.getElementById("editIsFeatured").checked;
+
+      if (!id || !productCode || !productName || !Number.isFinite(sellingPrice) || sellingPrice < 0 ||
+          !Number.isInteger(displayOrder) || displayOrder < 1) {
+        setMessage(editProductMessage, "Please enter valid product details.", "error");
+        return;
+      }
+
+      const slug = productName.toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") ||
+        productCode.toLowerCase();
+
+      const { error } = await supabaseClient
+        .from("products")
+        .update({
+          product_code: productCode,
+          name: productName,
+          slug,
+          description: description || null,
+          selling_price: sellingPrice,
+          is_active: isActive,
+          is_featured: isFeatured,
+          display_order: displayOrder
+        })
+        .eq("id", id);
+
+      if (error) {
+        setMessage(editProductMessage, "Could not save changes: " + error.message, "error");
+        return;
+      }
+
+      setMessage(editProductMessage, "Product updated successfully.", "success");
+      await loadProducts();
+      setTimeout(closeEditModal, 500);
+    });
+
+    document.getElementById("closeEditBtn").addEventListener("click", closeEditModal);
+    document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
+    editModal.addEventListener("click", (event) => {
+      if (event.target === editModal) closeEditModal();
     });
 
     document.getElementById("refreshBtn").addEventListener("click", async () => {
