@@ -84,7 +84,17 @@
     .check-row label { display:flex; align-items:center; gap:7px; margin:0; font-weight:600; }
     .check-row input { width:auto; }
     .form-actions { margin-top:18px; display:flex; gap:10px; }
+    .upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .upload-grid .full { grid-column:1/-1; }
+    select, input[type="file"] { width:100%; padding:12px 13px; border:1px solid #d8ccc6; border-radius:8px; font-size:14px; background:#fff; }
+    .file-hint { margin-top:7px; color:#81716a; font:12px Arial,sans-serif; }
+    .preview-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+    .preview { border:1px solid #eadfd9; border-radius:10px; padding:8px; background:#faf7f4; }
+    .preview img { width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:7px; display:block; }
+    .preview span { display:block; margin-top:6px; text-align:center; font:11px Arial,sans-serif; color:#76655e; }
+    .upload-status { margin-top:12px; }
     @media (max-width:700px) { .form-grid { grid-template-columns:1fr; } .form-group.full { grid-column:auto; } }
+    @media (max-width:700px) { .upload-grid { grid-template-columns:1fr; } .upload-grid .full { grid-column:auto; } .preview-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width: 700px) {
       .topbar { align-items: flex-start; flex-direction: column; }
       .stats { grid-template-columns: 1fr; }
@@ -170,6 +180,28 @@
           <div id="addProductMessage" class="message"></div>
         </form>
       </section>
+
+      <section class="card section" style="margin-top:22px;">
+        <div class="section-head">
+          <div><h2>Product Image Upload</h2><div class="hint">Upload up to 4 gallery images for an existing product</div></div>
+        </div>
+        <form id="imageUploadForm">
+          <div class="upload-grid">
+            <div class="form-group full">
+              <label for="imageProduct">Select Product</label>
+              <select id="imageProduct" required><option value="">Loading products...</option></select>
+            </div>
+            <div class="form-group full">
+              <label for="productImages">Choose Images</label>
+              <input id="productImages" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+              <div class="file-hint">Select 1–4 images. JPG, PNG or WebP. Maximum 5 MB per image.</div>
+            </div>
+          </div>
+          <div id="imagePreview" class="preview-grid"></div>
+          <div class="form-actions"><button class="btn-dark" type="submit">Upload Images</button><button class="btn-light" type="reset">Clear</button></div>
+          <div id="imageUploadMessage" class="message upload-status"></div>
+        </form>
+      </section>
     </section>
   </div>
 
@@ -186,6 +218,11 @@
     const tbody = document.getElementById("productTableBody");
     const addProductForm = document.getElementById("addProductForm");
     const addProductMessage = document.getElementById("addProductMessage");
+    const imageUploadForm = document.getElementById("imageUploadForm");
+    const imageProduct = document.getElementById("imageProduct");
+    const productImages = document.getElementById("productImages");
+    const imagePreview = document.getElementById("imagePreview");
+    const imageUploadMessage = document.getElementById("imageUploadMessage");
 
     function setMessage(el, text, type = "") {
       el.textContent = text;
@@ -208,6 +245,53 @@
       loginSection.style.display = "none";
       dashboard.style.display = "block";
       await loadProducts();
+      await populateImageProducts();
+    }
+
+    function renderImagePreview() {
+      imagePreview.replaceChildren();
+      const files = Array.from(productImages.files || []);
+      files.slice(0, 4).forEach((file, index) => {
+        const box = document.createElement("div");
+        box.className = "preview";
+        const img = document.createElement("img");
+        img.alt = "Preview " + (index + 1);
+        const label = document.createElement("span");
+        label.textContent = "Image " + (index + 1);
+        const reader = new FileReader();
+        reader.onload = () => { img.src = reader.result; };
+        reader.readAsDataURL(file);
+        box.append(img, label);
+        imagePreview.appendChild(box);
+      });
+    }
+
+    async function populateImageProducts() {
+      const { data, error } = await supabaseClient
+        .from("products")
+        .select("id, product_code, name, display_order")
+        .order("display_order", { ascending: true });
+
+      imageProduct.replaceChildren();
+      if (error) {
+        const option = document.createElement("option");
+        option.textContent = "Could not load products";
+        option.value = "";
+        imageProduct.appendChild(option);
+        return;
+      }
+
+      const first = document.createElement("option");
+      first.value = "";
+      first.textContent = "Choose a product...";
+      imageProduct.appendChild(first);
+
+      (data || []).forEach(product => {
+        const option = document.createElement("option");
+        option.value = product.id;
+        option.textContent = (product.product_code || "No code") + " — " + (product.name || "Unnamed product");
+        imageProduct.appendChild(option);
+      });
     }
 
     async function loadProducts() {
@@ -365,7 +449,91 @@
       await loadProducts();
     });
 
-    document.getElementById("refreshBtn").addEventListener("click", loadProducts);
+    productImages.addEventListener("change", () => {
+      const files = Array.from(productImages.files || []);
+      if (files.length > 4) {
+        setMessage(imageUploadMessage, "Please select no more than 4 images.", "error");
+        productImages.value = "";
+        imagePreview.replaceChildren();
+        return;
+      }
+      const invalid = files.find(file => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024);
+      if (invalid) {
+        setMessage(imageUploadMessage, "Each image must be JPG, PNG or WebP and 5 MB or smaller.", "error");
+        productImages.value = "";
+        imagePreview.replaceChildren();
+        return;
+      }
+      setMessage(imageUploadMessage, files.length ? files.length + " image(s) selected." : "");
+      renderImagePreview();
+    });
+
+    imageUploadForm.addEventListener("reset", () => {
+      setTimeout(() => { imagePreview.replaceChildren(); setMessage(imageUploadMessage, ""); }, 0);
+    });
+
+    imageUploadForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const productId = imageProduct.value;
+      const files = Array.from(productImages.files || []);
+
+      if (!productId) {
+        setMessage(imageUploadMessage, "Please select a product.", "error");
+        return;
+      }
+      if (files.length < 1 || files.length > 4) {
+        setMessage(imageUploadMessage, "Please select between 1 and 4 images.", "error");
+        return;
+      }
+
+      const selectedProduct = imageProduct.options[imageProduct.selectedIndex];
+      const safeProductCode = (selectedProduct.textContent.split(" — ")[0] || "product").replace(/[^a-zA-Z0-9_-]/g, "");
+      setMessage(imageUploadMessage, "Uploading images...");
+
+      const uploadedRows = [];
+      try {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const ext = file.name.split(".").pop().toLowerCase();
+          const path = safeProductCode + "/" + Date.now() + "-" + (i + 1) + "." + ext;
+
+          const { error: uploadError } = await supabaseClient.storage
+            .from("product-images")
+            .upload(path, file, { contentType: file.type, upsert: false });
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicData } = supabaseClient.storage
+            .from("product-images")
+            .getPublicUrl(path);
+
+          uploadedRows.push({
+            product_id: productId,
+            image_url: publicData.publicUrl,
+            alt_text: selectedProduct.textContent + " - Image " + (i + 1),
+            display_order: i + 1,
+            is_primary: i === 0
+          });
+        }
+
+        const { error: rowError } = await supabaseClient
+          .from("product_images")
+          .insert(uploadedRows);
+
+        if (rowError) throw rowError;
+
+        setMessage(imageUploadMessage, files.length + " image(s) uploaded successfully.", "success");
+        imageUploadForm.reset();
+        await loadProducts();
+      } catch (error) {
+        setMessage(imageUploadMessage, "Image upload failed: " + error.message, "error");
+      }
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      await loadProducts();
+      await populateImageProducts();
+    });
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
