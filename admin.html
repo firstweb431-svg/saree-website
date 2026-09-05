@@ -104,7 +104,8 @@
     .edit-head h2 { margin:0; font-size:21px; }
     .close-btn { background:#eee7e2; color:#3c2c27; font-size:18px; padding:6px 10px; }
     .edit-actions { margin-top:18px; display:flex; gap:10px; justify-content:flex-end; }
-    .btn-edit { background:#eee7e2; color:#3c2c27; padding:7px 11px; font-size:12px; }
+    .btn-edit { background:#eee7e2; color:#3c2c27; padding:7px 11px; font-size:12px; margin-right:6px; }
+    .btn-delete { background:#f5e7e5; color:#a33b32; padding:7px 11px; font-size:12px; }
     @media (max-width:700px) { .form-grid { grid-template-columns:1fr; } .form-group.full { grid-column:auto; } }
     @media (max-width:700px) { .upload-grid { grid-template-columns:1fr; } .upload-grid .full { grid-column:auto; } .preview-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width: 700px) {
@@ -460,7 +461,15 @@
         editBtn.className = "btn-edit";
         editBtn.textContent = "Edit";
         editBtn.addEventListener("click", () => openEditModal(product));
-        actionCell.appendChild(editBtn);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "btn-delete";
+        deleteBtn.textContent = product.is_active ? "Delete" : "Deleted";
+        deleteBtn.disabled = !product.is_active;
+        deleteBtn.addEventListener("click", () => deleteProduct(product));
+
+        actionCell.append(editBtn, deleteBtn);
 
         tr.append(imgCell, nameCell, priceCell, statusCell, featuredCell, orderCell, actionCell);
         tbody.appendChild(tr);
@@ -619,6 +628,29 @@
       }
     });
 
+
+    async function deleteProduct(product) {
+      const confirmed = window.confirm(
+        `Delete "${product.name || "this product"}"?\n\nThis will hide the product from your storefront, but keep its database record so existing order history is not broken.`
+      );
+      if (!confirmed) return;
+
+      setMessage(productMessage, "Deleting product...");
+
+      const { error } = await supabaseClient
+        .from("products")
+        .update({ is_active: false })
+        .eq("id", product.id);
+
+      if (error) {
+        setMessage(productMessage, "Could not delete product: " + error.message, "error");
+        return;
+      }
+
+      setMessage(productMessage, "Product deleted successfully and hidden from the storefront.", "success");
+      await loadProducts();
+      await populateImageProducts();
+    }
 
     editProductForm.addEventListener("submit", async (event) => {
       event.preventDefault();
